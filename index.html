@@ -13,15 +13,15 @@
     <script src="js/jquery.switchButton.js"></script>
     
     <script>
-        if (navigator.userAgent.match(/X11; Linux armv7/i) != null){
-            var user = "local";
-            var pass = "localuser";
+         if (navigator.userAgent.match(/X11; Linux armv7/i) != null){ //Thsis should trigger on RPi with chromium
+            var user = "local_user_name";
+            var pass = "local_user_password";
             var url = "127.0.0.1:8083/";
         }
-        else {
+        else { // This is for development and should trigger in other browsers
             var user = "admin";
-            var pass = "opel1811";
-            var url = "192.168.178.36:8083/";
+            var pass = "admin_password";
+            var url = "ip_of_zwave:8083/";
         }
         var api = "ZAutomation/api/v1/";
         var includeGlobalRoom = false;
