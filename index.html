@@ -1,0 +1,75 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Z-Wave RPi Smarthome</title>
+    <link rel="stylesheet" href="css/jquery-ui.css">
+    <link rel="stylesheet" href="css/jquery-ui.theme.css">
+    <link rel="stylesheet" href="css/jquery.switchButton.css">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="js/jquery-ui.js"></script>
+    <script src="js/jquery.ui.touch-punch.min.js"></script>
+    <script src="js/jquery.switchButton.js"></script>
+    
+    <script>
+        if (navigator.userAgent.match(/X11; Linux armv7/i) != null){
+            var user = "local";
+            var pass = "localuser";
+            var url = "127.0.0.1:8083/";
+        }
+        else {
+            var user = "admin";
+            var pass = "opel1811";
+            var url = "192.168.178.36:8083/";
+        }
+        var api = "ZAutomation/api/v1/";
+        var includeGlobalRoom = false;
+        var levels = {"on" : "Ein","off" : "Aus","up" : "Offen","half" : "Halb geöffnet","down" : "Geschlossen"};
+        var month = {1 : "Januar", 2 : "Februar", 3 : "März", 4: "April", 5: "Mai", 6 : "juni", 7 : "July", 8: "August", 9 : "September", 10 : "Oktober", 11 : "November", 12 : "Dezember"}
+        var days = {0 : "Sonntag", 1 : "Montag", 2 : "Dienstag", 3 : "Mittwoch", 4 : "Donnerstag", 5 : "Freitag", 6 : "Samstag"}
+        var updateInterval = 2000;
+        var longpress = 1000;
+        var startLongPress;
+        var didLongPress = false;
+
+  </script>
+  <script src="js/main.js"></script>
+</head>
+<body>
+    <div class="header" style=""onclick="javascript: window.location.replace('index.html');">
+        <div id="date" class="date">&nbsp;</div>
+        <div id="time" class="time">&nbsp;</div>
+    </div>
+    <div id="accordion" class="accordion"></div>
+    
+    
+    <div id="dialog-switchBinary" class="dialog" title="">
+        <img src="" id="dialog-switchBinary-image" width="50">
+        <div class="slider" id="slider-1" style="float: right;">
+            <input type="checkbox" value="1" checked>
+        </div>
+    </div>
+    
+    <div id="dialog-sensorMultilevel" class="dialog" title="">
+        <img src="" id="dialog-sensorMultilevel-image" width="50">
+        <div id="dialog-sensorMultilevel-metrics" style="float: right;">
+            <div id="dialog-sensorMultilevel-level" style="font-size: 50px;font-weight: bold;">&nbsp;</div>
+            <div id="dialog-sensorMultilevel-update">&nbsp;</div>
+        </div>
+    </div>
+    
+    <div id="dialog-camera" class="dialog" title="">
+        <img src="" id="dialog-camera-url-image">
+    </div>
+    
+    <div id="dialog-switchMultilevel" class="dialog" title="">
+        <img src="" id="dialog-switchMultilevel-image" width="50" style="float: left;">
+        <div style="float: left;">
+            <div id="dialog-switchMultilevel-slider" style="height:200px;float:left;margin-left: 50px;"></div>
+            <div id="dialog-switchMultilevel-level" style="font-size: 20px;font-weight: bold;float: right;width: 150px;text-align: center;">&nbsp;</div>
+        </div>
+        
+    </div>
+</body>
+</html>
