@@ -5,7 +5,7 @@ Installation:
 1) Download Zip-Archive
 2) Decompress the Archive under /opt/z-way-server/htdocs/smarthome/
 3) Edit the index.html and give Username and Password for a local User of Z-Wave
-4) Point your Chromium-Browser to http://127.0.0.1/smarthome/rpi
+4) Point your Chromium-Browser to http://127.0.0.1/smarthome/zwave-rpi
 
 There are some Variables:
 - includeGlobalRoom: Display ZWay's Global Room or not
