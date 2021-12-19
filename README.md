@@ -16,4 +16,8 @@ Every Device with the Tag "RPi.Include" is included in their room.
 
 If you have trouble with Icons for some Devices, use custom Icons instead. This works for me.
 
-
+![The Dashboard](https://github.com/iTommix/zwave-rpi/blob/master/dashboard.png?raw=true)
+![All rooms](https://github.com/iTommix/zwave-rpi/blob/master/rooms.png?raw=true)
+![A room](https://github.com/iTommix/zwave-rpi/blob/master/room.png?raw=true)
+![Long touch on a Switch](https://github.com/iTommix/zwave-rpi/blob/master/switch.png?raw=true)
+![Manage](https://github.com/iTommix/zwave-rpi/blob/master/manage.png?raw=true)
