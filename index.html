@@ -1,38 +1,246 @@
 <html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Z-Wave RPi Smarthome</title>
-    <link rel="stylesheet" href="css/jquery-ui.css">
-    <link rel="stylesheet" href="css/jquery-ui.theme.css">
-    <link rel="stylesheet" href="css/slider.css">
-    <link rel="stylesheet" href="css/main.css">
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="js/jquery-ui.js"></script>
-    <script src="js/jquery.ui.touch-punch.min.js"></script>
-    <script src="js/jquery.slideButton.js"></script>
-    <script>
-        var user = "local";
-        var pass = "localuser";
-        var url = "192.168.178.36:8083/";
-        var api = "ZAutomation/api/v1/";
-        var includeGlobalRoom = false;
-        var levels = {"on" : "Ein","off" : "Aus","up" : "Offen","half" : "Halb geöffnet","down" : "Geschlossen"};
-        var month = {1 : "Januar", 2 : "Februar", 3 : "März", 4: "April", 5: "Mai", 6 : "juni", 7 : "July", 8: "August", 9 : "September", 10 : "Oktober", 11 : "November", 12 : "Dezember"}
-        var days = {0 : "Sonntag", 1 : "Montag", 2 : "Dienstag", 3 : "Mittwoch", 4 : "Donnerstag", 5 : "Freitag", 6 : "Samstag"}
-        var updateInterval = 2000;
-        var interval;
-        var longpress = 1000;
-        var startLongPress;
-        var didLongPress = false;
-  </script>
-  <script src="js/main.js"></script>
-</head>
-<body>
-    <div class="header" style=""onclick="javascript: window.location.replace('index.html');">
-        <div id="date" class="date">&nbsp;</div>
-        <div id="time" class="time">&nbsp;</div>
-    </div>
-    <div id="accordion" class="accordion"></div>
-</body>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Z-Wave RPi Smarthome</title>
+        <link rel="stylesheet" href="css/themes/default/jquery.mobile-1.4.5.min.css">
+        <link rel="stylesheet" href="css/jquery-ui.css">
+        <link rel="stylesheet" href="css/slider.css">
+        <link rel="stylesheet" href="css/main.css">
+        <script src="js/jquery-1.11.1.min.js"></script>
+        <script src="js/jquery-ui.js"></script>
+        <script src="js/jquery.mobile-1.4.5.min.js"></script>
+        <script src="js/jquery.slideButton.js"></script>
+        <script>
+            
+            var user = "local"; // A local user on zwave
+            var pass = "localuser"; // and his password
+            var url = "127.0.0.1:8083/";
+            var sysurl = "127.0.0.1";
+            var api = "ZAutomation/api/v1/";
+            var includeGlobalRoom = false;
+            var levels = {"on" : "Ein","off" : "Aus","up" : "Offen","half" : "Halb geöffnet","down" : "Geschlossen"};
+            var month = {1 : "Januar", 2 : "Februar", 3 : "März", 4: "April", 5: "Mai", 6 : "juni", 7 : "July", 8: "August", 9 : "September", 10 : "Oktober", 11 : "November", 12 : "Dezember"}
+            var days = {0 : "Sonntag", 1 : "Montag", 2 : "Dienstag", 3 : "Mittwoch", 4 : "Donnerstag", 5 : "Freitag", 6 : "Samstag"}
+            var updateInterval = 2000;
+            var interval;
+            var longpress = 1000;
+            var startLongPress;
+            var didLongPress = false;
+            var pageTimer;
+            var widgets=[];
+            
+            var canvas;
+            var ctx;
+            var radius;
+            var result;
+                
+                
+            function system(action) {
+                $.getJSON( "http://192.168.178.36:8000/?action="+action, function( data ) {
+                    //$( ".result" ).html( data );
+                    result = jQuery.parseJSON(data);
+                    $.each( result, function( key, val ) {
+                        $("#"+key).html(val);
+                    });
+                });
+            }
+            
+            function restart(server) {
+                switch (server) {
+                    case "zway":
+                        $("#zway-stat").find("img").attr("src", "process.gif");
+                        break;
+                    case "homebridge":
+                        $("#home-stat").find("img").attr("src", "process.gif");
+                        break;
+                }
+                system(server);
+            }
+
+            
+            $(document).on("click", function() {
+                //system("backlight");
+                window.clearTimeout(pageTimer);
+                pageTimer = setTimeout(function() {
+                    $.mobile.changePage("#clock");
+                }, 60000);
+            });
+            
+            $( document ).ready(function() {
+                canvas = document.getElementById("canvas");
+                ctx = canvas.getContext("2d");
+                radius = canvas.height / 2;
+                ctx.translate(radius, radius);
+                radius = radius * 0.90;
+                setInterval(drawClock, 1000);
+                
+                setInterval(function(){
+                    system("sysinfo");
+                }, 5000);
+            });
+            
+            function drawClock() {
+                drawFace(ctx, radius);
+                drawNumbers(ctx, radius);
+                drawTime(ctx, radius);
+            }
+            
+            function drawFace(ctx, radius) {
+                var grad;
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, 0, 2*Math.PI);
+                ctx.fillStyle = 'grey';
+                ctx.fill();
+                grad = ctx.createRadialGradient(0,0,radius*0.95, 0,0,radius*1.05);
+                grad.addColorStop(0, '#333');
+                grad.addColorStop(0.5, '#aaa');
+                grad.addColorStop(1, '#333');
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = radius*0.1;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(0, 0, radius*0.1, 0, 2*Math.PI);
+                ctx.fillStyle = '#333';
+                ctx.fill();
+            }
+            function drawNumbers(ctx, radius) {
+                var ang;
+                var num;
+                ctx.font = radius * 0.15 + "px arial";
+                ctx.textBaseline = "middle";
+                ctx.textAlign = "center";
+                for(num = 1; num < 13; num++){
+                    ang = num * Math.PI / 6;
+                    ctx.rotate(ang);
+                    ctx.translate(0, -radius * 0.85);
+                    ctx.rotate(-ang);
+                    ctx.fillText(num.toString(), 0, 0);
+                    ctx.rotate(ang);
+                    ctx.translate(0, radius * 0.85);
+                    ctx.rotate(-ang);
+                }
+            }
+
+            function drawTime(ctx, radius){
+                var now = new Date();
+                var hour = now.getHours();
+                var minute = now.getMinutes();
+                var second = now.getSeconds();
+                //hour
+                hour = hour%12;
+                hour = (hour*Math.PI/6)+(minute*Math.PI/(6*60))+(second*Math.PI/(360*60));
+                drawHand(ctx, hour, radius*0.5, radius*0.07);
+                //minute
+                minute = (minute*Math.PI/30)+(second*Math.PI/(30*60));
+                drawHand(ctx, minute, radius*0.8, radius*0.07);
+                // second
+                second = (second*Math.PI/30);
+                drawHand(ctx, second, radius*0.9, radius*0.02);
+                
+                var currentdate = new Date();
+                var date = currentdate.getDate()+" "+month[(currentdate.getMonth()+1)]+" "+currentdate.getFullYear();
+                $("#day").html(days[currentdate.getDay()]);
+                $("#date").html(date);
+
+            }
+
+            function drawHand(ctx, pos, length, width) {
+                ctx.beginPath();
+                ctx.lineWidth = width;
+                ctx.lineCap = "round";
+                ctx.moveTo(0,0);
+                ctx.rotate(pos);
+                ctx.lineTo(0, -length);
+                ctx.stroke();
+                ctx.rotate(-pos);
+            }
+            
+            (function(){ 
+                var randomh=Math.random();
+                var e = document.getElementsByTagName("script")[0];
+                var d = document.createElement("script");
+                d.src = "js/main.js?x="+randomh+"";
+                d.type = "text/javascript"; 
+                d.async = true;
+                d.defer = true;
+                e.parentNode.insertBefore(d,e);
+                $(document).trigger("click");
+            })();
+            
+        </script>
+    </head>
+    <body>
+        <div data-role="page" class="jqm-demos jqm-home page roompage" id="home">
+            <div data-role="header" class="jqm-header" style="background-color: lavender;">
+                <a href="#manage">Manage</a>
+                <h1>Z-Wave Raspberry Smarthome</h1>
+            </div>
+            <div role="main" class="ui-content jqm-content" id="rooms">
+            </div>
+        </div>
+        
+        <div data-role="page" class="jqm-demos jqm-home page" id="clock" onclick="$.mobile.changePage('#home');" style="background-color: #000000">
+            <div role="main" class="ui-content jqm-content" style="padding: 0;">
+                <canvas id="canvas" width="480" height="480" style="background-color:#000000; position: relative; left: 20px;"></canvas>
+                <div id="widgets" style="position: relative; float: right; max-width: 280px;opacity: 0.5;">
+                    <div style="background-color: #eee;width: 200px;height: 50px;border-radius: 5px;position: relative;left: 12px;margin-top: 12px;padding: 15px;">
+                        <div class="title"><span id="day" style="font-size: 18px;"></span></div>
+                        <div class="level"><span id="date" style="font-size: 18px;"></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div data-role="page" class="jqm-demos jqm-home page" id="manage">
+            <div data-role="header" class="jqm-header">
+                <a href="#" data-rel="back">Alle Räume</a>
+                <h1>Manage</h1>
+            </div>
+            <div role="main" class="ui-content jqm-content">
+                <div style="position: relative; float: left; width: 49%">
+                    <button class="ui-btn" onclick="window.location.replace('index.html');" style="margin-top: 20px;">Seite neu laden</button>
+                    <button class="ui-btn" onclick="system('reboot');" style="margin-top: 20px;">System neu starten</button>
+                    <button class="ui-btn" onclick="system('shutdown');" style="margin-top: 20px;">System herunterfahren</button>
+                    <button class="ui-btn" onclick="restart('zway');" style="margin-top: 20px;">Z-Way Server neu starten</button>
+                    <button class="ui-btn" onclick="restart('homebridge');" style="margin-top: 20px;">Homebridge Server neu starten</button>
+                </div>
+                <div style="position: relative; float: right; width: 49%; border: #000 1px solid; border-radius: 5px; height: 300px; background-color: #eee;margin-top: 16px;">
+                    <table cellpadding="0" cellspacing="10" style="width: 100%; text-shadow: none;">
+                        <tr>
+                            <td colspan="3" style="text-align: center; font-weight: bold;height: 40px;">Systeminformation</td>
+                        </tr>
+                        <tr>
+                            <td style="width: 50%">System uptime</td><td>:</td><td><span id="uptime"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 50%">Memory available</td><td>:</td><td><span id="ram"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 50%">Memory used</td><td>:</td><td><span id="mem"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 50%">CPU usage</td><td>:</td><td><span id="cpu-perc"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 50%">CPU temperature</td><td>:</td><td><span id="cpu-temp"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 50%">Z-Way-Server status</td><td>:</td><td><span id="zway-stat"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 50%">Homebridge status</td><td>:</td><td><span id="home-stat"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 50%">Pilight-Server status</td><td>:</td><td><span id="pilight-stat"></span></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                
+            </div>
+        </div>
+    </body>
 </html>
+    

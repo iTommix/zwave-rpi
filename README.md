@@ -15,3 +15,5 @@ There are some Variables:
 Every Device with the Tag "RPi.Include" is included in their room.
 
 If you have trouble with Icons for some Devices, use custom Icons instead. This works for me.
+
+

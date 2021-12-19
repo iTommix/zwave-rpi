@@ -1,6 +1,14 @@
 body {
     /* background-color: #fce88e; */
+    background-image: url(../back.png);
     font-family: Arial,Helvetica,sans-serif;
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+       -khtml-user-select: none; /* Konqueror HTML */
+         -moz-user-select: none; /* Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome and Opera */
 }
 
 .accordion-background {
@@ -9,6 +17,13 @@ body {
 .accordion-header {
     /* background-color: #8ed1fc; */
 }
+
+a {
+    text-decoration: none;
+    color: black!important;
+}
+
+
 .header {
     font-family: Arial,Helvetica,sans-serif;
     background-color: #8ed1fc;
@@ -19,7 +34,10 @@ body {
     background: #999999 url("images/ui-bg_inset-hard_75_999999_1x100.png") 50% 50% repeat-x;
 }
 .dialog {
-    display: none;
+    max-width: 400px;
+    width: 300px;
+    height: 300px;
+    background-color: lightsteelblue;
 }
 .date {
     width: 49%;
@@ -45,6 +63,26 @@ body {
     height: 100px;
     border: 1px solid #aaa;
     border-radius: 10px;
+    background-color: #888;
+    color: #eee;
+    text-shadow: none;
+    float: left;
+    margin: 12px;
+    cursor: pointer;
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+       -khtml-user-select: none; /* Konqueror HTML */
+         -moz-user-select: none; /* Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome and Opera */
+}
+
+.room {
+    width: 165px;
+    height: 165px;
+    border: 1px solid #aaa;
+    border-radius: 10px;
     background-color: #eee;
     float: left;
     margin: 12px;
@@ -57,6 +95,32 @@ body {
               user-select: none; /* Non-prefixed version, currently
                                     supported by Chrome and Opera */
 }
+
+.room img {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+}
+
+.room div {
+    position: relative;
+    font-size: 18px;
+    height: 20px;
+    background-color: #eee;
+    top: -30px;
+    width: 155px;
+    margin: 0;
+    opacity: .8;
+    text-align: center;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    padding: 5px;
+}
+
+.page {
+    background-color: unset;
+}
+
 .icon {
     width: 30px;
     height: 30px;
@@ -67,11 +131,22 @@ body {
     font-size: 10px;
     font-weight: bold;
     margin-left: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .level {
     font-size: 12px;
     font-weight: bold;
     margin-left: 5px;
+}
+
+.on {
+    color: #333;
+}
+
+.off {
+    color: #eee;
 }
 
 #dialog-camera-url-image {

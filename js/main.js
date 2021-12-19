@@ -2,11 +2,15 @@ $( function() {
     var rooms=get("locations", false, function(data) {
         console.log(data);
         var html="";
+        var page="";
         var dialog="";
         $.each(data, function (key1, room) {
             //console.log(room.title);
-            if(room.title!="globalRoom" || (room.title=="globalRoom" && includeGlobalRoom==true)) {
-                html+="<h3>"+room.title+"</h3><div>";
+            if(room.title!="globalRoom" || (room.title==="globalRoom" && includeGlobalRoom===true)) {
+                html='<a href="#room_'+key1+'" data-transition="slide"><div class="room" data-name="'+room.title+'"><image src="'+(room.user_img ? '../../ZAutomation/api/v1/load/image/'+room.user_img :(room.default_img ? '../storage/img/rooms/'+room.default_img : '../storage/img/placeholder-img.png'))+'"><div>'+room.title+'</div></div></a>';
+                $( "#rooms" ).append( html );
+                page='<div data-role="page" class="jqm-demos jqm-home page roompage" id="room_'+key1+'"><div data-role="header" class="jqm-header" style="background-color: lavender;"><a href="#" data-rel="back">Alle Räume</a><h1>'+room.title+'</h1></div><div role="main" class="ui-content jqm-content content_'+key1+'"></div></div>';
+                $("body").append(page);
                 $.each(room.namespaces, function (key2, namespace) {
                     if(namespace.id == "devices_all") {
                         //console.log(namespace);
@@ -14,38 +18,68 @@ $( function() {
                             //console.log(param);
                             device=get("devices/"+param.deviceId, false, function(data) {
                                 if(valueInObject(data.tags, "RPI.Include")) {
-                                    console.log(data);
                                     var info = getDeviceInformation(data);
-                                    html+='<div id="'+data.id+'" class="device '+data.deviceType+'" style="background-color: '+info[0]+';">'+info[1]+'</div>';
+                                    console.log(info);
+                                    $("#room_"+key1+" .content_"+key1).append('<div id="'+data.id+'" class="device '+data.deviceType+' '+data.id+'" style="background-color: '+info[0]+';">'+info[1]+'</div>');
                                     var icon = getIcon(data);
-                                    /* Dialogs */
                                     switch(data.deviceType) {
                                         case "switchBinary":
-                                            dialog='<div id="dialog-'+data.id+'" class="dialog" title="'+data.metrics.title+'"><img src="'+icon[1]+'" id="dialog-image-'+data.id+'" width="50" style="float: left;"><input type="checkbox" id="checkbox-'+data.id+'"></div>';
-                                            $( "#accordion" ).after(dialog);
+                                            dialog=`
+                                                <div data-role="popup" id="dialog-`+data.id+`" data-overlay-theme="a" data-theme="a" class="dialog">
+                                                    <div data-role="header" data-theme="a"><h1>`+data.metrics.title+`</h1></div>
+                                                    <div role="main" class="ui-content" style="height: 186px;">
+                                                        <img src="`+icon[1]+`" id="dialog-image-`+data.id+`" width="50" style="float: left;">
+                                                        <input type="checkbox" name="checkbox-`+data.id+`" id="checkbox-`+data.id+`" data-role="none">
+                                                    </div>
+                                                    <button class="ui-btn ui-mini" id="home-`+data.id+`" style="margin: 0px;" onclick="widget('`+data.id+`');" data-value="0">Zum Homescreen hinzufügen</button>
+                                                </div>`;
+                                            $("#room_"+key1+" .content_"+key1).append(dialog);
                                             $("#checkbox-"+data.id).slideButton({
                                                 state: data.metrics.level,
                                                 on: function() {
-                                                    set(data.id, "on", function(data){});
+                                                    set(data.id, "on", function(){});
                                                 },
                                                 off: function() {
-                                                    set(data.id, "off", function(data){});
+                                                    set(data.id, "off", function(){});
                                                 }
                                             });
                                         break;
                                         case "sensorMultilevel":
                                             var date=new Date(data.updateTime * 1000);
-                                            dialog='<div id="dialog-'+data.id+'" class="dialog" title="'+data.metrics.title+'"><img src="'+icon[1]+'" id="dialog-image-'+data.id+'" width="50"><div id="dialog-sensorMultilevel-metrics" style="float: right;"><div id="dialog-'+data.id+'-level" style="font-size: 50px;font-weight: bold;">'+data.metrics.level+" "+data.metrics.scaleTitle+'</div><div id="dialog-'+data.id+'-update">'+pad(date.getHours(),2)+":"+pad(date.getMinutes(),2)+":"+pad(date.getSeconds(),2)+'</div>';
-                                            $( "#accordion" ).after(dialog);
+                                            //dialog='<div data-role="popup" id="dialog-'+data.id+'" data-overlay-theme="a" data-theme="a" class="dialog"><div data-role="header" data-theme="a"><h1>'+data.metrics.title+'</h1></div><div role="main" class="ui-content"><img src="'+icon[1]+'" id="dialog-image-'+data.id+'" width="50" style="float: left;"><div id="dialog-sensorMultilevel-metrics" style="float: right;"><div id="dialog-'+data.id+'-level" style="font-size: 50px;font-weight: bold;">'+data.metrics.level+" "+data.metrics.scaleTitle+'</div><div id="dialog-'+data.id+'-update" style="font-size: 24px;">'+pad(date.getHours(),2)+":"+pad(date.getMinutes(),2)+' Uhr</div></div><div data-role="footer" data-theme="a"><input type="checkbox" data-role="flipswitch" name="flip-checkbox-1" id="flip-checkbox-1" data-mini="true"></div>';
+                                            dialog = `
+                                                    <div data-role="popup" id="dialog-`+data.id+`" data-overlay-theme="a" data-theme="a" class="dialog">
+                                                        <div data-role="header" data-theme="a"><h1>`+data.metrics.title+`</h1></div>
+                                                        <div role="main" class="ui-content" style="height: 186px;">
+                                                            <img src="`+icon[1]+`" id="dialog-image-`+data.id+`" width="50" style="float: left;">
+                                                            <div id="dialog-sensorMultilevel-metrics" style="float: right;">
+                                                                <div id="dialog-`+data.id+`-level" style="font-size: 50px;font-weight: bold;">`+data.metrics.level+" "+data.metrics.scaleTitle+`</div>
+                                                                <div id="dialog-`+data.id+`-update" style="font-size: 24px;">`+pad(date.getHours(),2)+":"+pad(date.getMinutes(),2)+` Uhr</div>
+                                                            </div>
+                                                        </div>
+                                                        <button class="ui-btn ui-mini" id="home-`+data.id+`" style="margin: 0px;" onclick="widget('`+data.id+`');" data-value="0">Zum Homescreen hinzufügen</button>
+                                                    </div>`;
+                                            
+                                            
+                                            $("#room_"+key1+" .content_"+key1).append(dialog);
                                         break;
                                         case "switchMultilevel":
-                                            dialog='<div id="dialog-'+data.id+'" class="dialog" title="'+data.metrics.title+'"><img src="'+icon[1]+'" id="dialog-image-'+data.id+'" width="50" style="float: left;"><div id="dialog-'+data.id+'-slider" class="slider" style="height:200px;float:left;margin-left: 60px;"></div><div id="dialog-'+data.id+'-level" style="font-size: 20px;font-weight: bold;float: right;width: 100%;text-align: center;">'+getLevel(data)+'</div></div>';
-                                            $( "#accordion" ).after(dialog);
+                                            dialog=`
+                                                <div data-role="popup" id="dialog-`+data.id+`" data-overlay-theme="a" data-theme="a" class="dialog">
+                                                    <div data-role="header" data-theme="a"><h1>`+data.metrics.title+`</h1></div>
+                                                    <div role="main" class="ui-content" style="height: 186px;">
+                                                        <img src="`+icon[1]+`" id="dialog-image-`+data.id+`" width="50" style="float: left;">
+                                                        <div id="dialog-`+data.id+`-slider" class="slider" style="height:200px;float:left;margin-left: 60px;"></div>
+                                                        <div id="dialog-`+data.id+`-level" style="font-size: 20px;font-weight: bold;float: right;width: 100%;text-align: center;">`+getLevel(data)+`</div>
+                                                    </div>
+                                                    <button class="ui-btn ui-mini" id="home-`+data.id+`" style="margin: 0px;" onclick="widget('`+data.id+`');" data-value="0">Zum Homescreen hinzufügen</button>
+                                                </div>`;
+                                            $("#room_"+key1+" .content_"+key1).append(dialog);
                                             $( "#dialog-"+data.id+"-slider" ).slider({
                                                 orientation: "vertical",
                                                 range: "min",
-                                                min: 0,
-                                                max: 99,
+                                                min: parseInt((valueInObject(data.tags, "RPI.Min") ? valueInObject(data.tags, "RPI.Min") : 0)),
+                                                max: parseInt((valueInObject(data.tags, "RPI.Max") ? valueInObject(data.tags, "RPI.Max") : 99)),
                                                 value: data.metrics.level,
                                                 slide: function( event, ui ) {
                                                     var newdata = {
@@ -57,13 +91,14 @@ $( function() {
                                                     $( "#dialog-"+data.id+"-level" ).html(getLevel(newdata));
                                                 },
                                                 stop: function(event, ui) {
-                                                    set(data.id, "exact?level="+ui.value, function(data){});
+                                                    set(data.id, "exact?level="+ui.value, function(){});
                                                 }
                                             });
                                             
                                         break;
                                         case "camera":
-                                            dialog='<div id="dialog-'+data.id+'" class="dialog" title=""><img src="'+icon[1]+'" id="dialog-image-'+data.id+'"></div>';
+                                            dialog='<div id="dialog-'+data.id+'" class="dialog" title="'+data.metrics.title+'"><img src="'+data.metrics.url+'" id="dialog-image-'+data.id+'" style="width: 320px, height: 240px"></div>';
+                                            $("#room_"+key1+" .content_"+key1).append(dialog);
                                         break;
                                     }
                                     
@@ -73,35 +108,20 @@ $( function() {
                         return false;
                     }
                 });
-                html+="</div>";
             }
         });
-        $( "#accordion" ).prepend( html );
-        $( "#accordion" ).accordion();
+
         $(".switchMultilevel-slider").slider();
         $(".ui-slider-handle").css("display", "none");
+        
     });
     
     startUpdate();
     
-    setInterval(function(){
-        var currentdate = new Date();
-        var date = days[currentdate.getDay()]+", "+currentdate.getDate()+" "+month[(currentdate.getMonth()+1)]+" "+currentdate.getFullYear();
-        $("#date").html(date);
-        var time = pad(currentdate.getHours(),2)+":"+pad(currentdate.getMinutes(),2)+":"+pad(currentdate.getSeconds(),2);
-        $("#time").html(time);
-        
-    }, 1000);
-    
-    $(".ui-accordion-header").each(function(i, obj){
-        $(this).addClass("accordion-header");
-    });
-    
     $(".device").each(function(i, obj){
-        console.log(obj.id);
         jQuery( "#"+obj.id ).on( 'touchstart', function( e ) {
             startLongPress = setTimeout(function() {
-                console.log('long press!');
+                //console.log('long press!');
                 didLongPress = true;
                 longTouch(obj.id);
                 window.clearTimeout(startLongPress);
@@ -115,23 +135,59 @@ $( function() {
         jQuery( "#"+obj.id ).on( 'touchend', function( e ) {
             window.clearTimeout(startLongPress);
             if(didLongPress==false) {
-                console.log('short press!');
+                //console.log('short press!');
                 shortTouch(obj.id);
             }
             didLongPress=false;
         });
         
     });
+    
+    if(window.localStorage.getItem("widgets")) {
+        widgets = window.localStorage.getItem("widgets").split(",");
+        $.each( widgets, function( key, value ) {
+            //$("#home-"+value).prop("checked", true);
+            //$("#home-"+value).attr("data-value", "1");
+            widget(value);
+        });
+    }
 });
 
 
+function widget(id) {
+    console.log(id);
+    widgets=[];
+    if($("#home-"+id).attr("data-value")=="0") {
+        $("#"+id).clone().appendTo("#widgets");
+        $("#home-"+id).attr("data-value", "1");
+        $("#home-"+id).html("Vom Homescreen entfernen");
+    }
+    else {
+        $("#widgets").find("."+id).remove();
+        $("#home-"+id).attr("data-value", "0");
+        $("#home-"+id).html("Zum Homescreen hinzufügen");
+    }
+    $("#widgets").find(".device").each(function(i, obj){
+       widgets[i]=this.id;
+    });
+    
+    window.localStorage.setItem("widgets", widgets);
+}
+
 function startUpdate() {
     interval=setInterval(function(){
-        var update=get("devices?since="+parseInt(((Date.now()-updateInterval)/1000)).toString(), true, function(data) {
+        updateDevices();
+    }, updateInterval);
+}
+
+function updateDevices() {
+    var update=get("devices?since="+parseInt(((Date.now()-updateInterval)/1000)).toString(), true, function(data) {
             $.each(data.devices, function (key, device) {
                 html=getDeviceInformation(device);
-                $("#"+device.id).html(html[1]);
+                $("."+device.id).html(html[1]);
                 $("#dialog-image-"+device.id).attr("src", getIcon(device)[1]);
+                var date=new Date(device.updateTime * 1000);
+                $("#dialog-"+device.id+"-update").html(pad(date.getHours(),2)+":"+pad(date.getMinutes(),2)+" Uhr");
                 switch(device.deviceType) {
                     case "switchBinary":
                         $("#checkbox-"+device.id).slideButton("switch_"+device.metrics.level);
@@ -148,7 +204,6 @@ function startUpdate() {
                 }
             });
         });
-    }, updateInterval);
 }
 
 function pad(num, size) {
@@ -159,7 +214,7 @@ function pad(num, size) {
 
 function shortTouch(id) {
     var device = get("devices/"+id, true, function(data) {
-        console.log(data);
+        //console.log(data);
         switch(data.deviceType) {
             case "switchMultilevel":
                 if(data.metrics.level>0) {
@@ -174,6 +229,11 @@ function shortTouch(id) {
             case "sensorMultilevel":
             case "camera":
                 longTouch(id);
+                /*
+                var html='<img src="'+data.metrics.url+'" id="" style="width: 320px, height: 240px">';
+                var myFrame = $("#dialog-image-"+data.id).contents().find('body');
+                myFrame.html(html);
+                */
             break;
             case "switchBinary":
                 if(data.metrics.level=="off" || data.metrics.level=="0") {
@@ -190,6 +250,9 @@ function shortTouch(id) {
 }
 
 function longTouch(id) {
+    console.log(id);
+    $( "#dialog-"+id ).popup( "open");
+/*    
     $( "#dialog-"+id).dialog({
         modal: true,
    });
@@ -197,13 +260,15 @@ function longTouch(id) {
    $(".ui-widget-overlay").click(function(){
        $( "#dialog-"+id).dialog("close");
    });
+   */
 }
 
 
 
 function getDeviceInformation(data) {
     var icon = getIcon(data);
-    var info='<img class="icon" src="'+icon[1]+'"><img id="process-'+data.id+'" src="process.gif" style="visibility: hidden;"><div class="title">'+data.metrics.title+'</div><div class="level">'+getLevel(data)+'</div>';
+    var state = icon[0]=="#888" ? "off" : "on";
+    var info='<img class="icon" src="'+icon[1]+'"><img class="process-'+data.id+'" src="process.gif" style="visibility: hidden;margin: 5px 0px;"><div class="title '+state+'">'+data.metrics.title+'</div><div class="level '+state+'">'+getLevel(data)+'</div>';
     return [icon[0], info];
 }
 
@@ -237,7 +302,7 @@ function getLevel(data) {
 
 function getIcon(data) {
     if(data.metrics.isFailed) {
-        icon="http://"+url+"/smarthome/storage/img/icons/caution.png";
+        icon="../storage/img/icons/caution.png";
         bg="#ff0000";
         return [bg, icon];
     }
@@ -253,22 +318,23 @@ function getIcon(data) {
 }
 
 function getCustomIcon(data) {
-    var icon="http://"+url+"/smarthome/user/icons/";
-    var bg="#eee";
+    //var icon="http://"+url+"/smarthome/user/icons/";
+    var icon="../user/icons/";
+    var bg="#888";
     switch(data.deviceType) {
         case "switchMultilevel":
             if(data.metrics.level==0) {
                 icon+=data.customIcons.level.down || data.customIcons.level.off;
-                $("#"+data.id).css("background-color", "#eee");
+                $("."+data.id).css("background-color", "#888");
             }
             else if(data.metrics.level==99) {
                 icon+=data.customIcons.level.up || data.customIcons.level.on;
-                $("#"+data.id).css("background-color", "#fff");
+                $("."+data.id).css("background-color", "#fff");
                 bg="#fff";
             }
             else {
                 icon+=data.customIcons.level.half;
-                $("#"+data.id).css("background-color", "#fff");
+                $("."+data.id).css("background-color", "#fff");
                 bg="#fff";
             }
         break;
@@ -277,11 +343,11 @@ function getCustomIcon(data) {
         case "switchBinary": 
             if(data.metrics.level=="off" || data.metrics.level=="0") {
                 icon+=data.customIcons.level.off;
-                $("#"+data.id).css("background-color", "#eee");
+                $("."+data.id).css("background-color", "#888");
             }
             else {
                 icon+=data.customIcons.level.on;
-                $("#"+data.id).css("background-color", "#fff");
+                $("."+data.id).css("background-color", "#fff");
                 bg="#fff";
             }
         break;
@@ -291,8 +357,9 @@ function getCustomIcon(data) {
 }
 
 function getStandardIcon(data) {
-    var icon="http://"+url+"/smarthome/storage/img/icons/"+data.metrics.icon.replace("blinds", "blind");
-    var bg="#eee";
+    //var icon="http://"+url+"/smarthome/storage/img/icons/"+data.metrics.icon.replace("blinds", "blind");
+    var icon="../storage/img/icons/"+data.metrics.icon.replace("blinds", "blind");
+    var bg="#888";
     switch(data.deviceType) {
         case "switchMultilevel":
             if(data.metrics.level<10) {
@@ -310,11 +377,11 @@ function getStandardIcon(data) {
         case "switchBinary": 
             if(data.metrics.level=="off" || data.metrics.level=="0") {
                 icon+="-off";
-                $("#"+data.id).css("background-color", "#eee");
+                $("."+data.id).css("background-color", "#888");
             }
             else {
                 icon+="-on";
-                $("#"+data.id).css("background-color", "#fff");
+                $("."+data.id).css("background-color", "#fff");
                 bg="#fff";
             }
         break;
@@ -324,20 +391,35 @@ function getStandardIcon(data) {
 
 function set(device, state, callback) {
     clearInterval(interval);
-    $("#process-"+device).css("visibility", "visible");
+    console.log(device);
+    $(".process-"+device).css("visibility", "visible");
     var apiurl="http://"+user+":"+pass+"@"+url+api+"devices/"+device+"/command/"+state;
         console.log(apiurl);
         $.ajax({
         method: "GET",
         url: apiurl
     }).done(function( msg ) {
-            $("#process-"+device).css("visibility", "hidden");
-            startUpdate();
-            callback(msg);
-    }).fail(function( jqXHR, textStatus ) {
-            startUpdate();
-            $("#process-"+device).css("visibility", "hidden");
-            alert( "Request failed: " + textStatus );
+        $(".process-"+device).css("visibility", "hidden");
+        updateDevices();
+        startUpdate();
+        callback(msg);
+    }).fail(function( jqXHR, textStatus, errorThrown) {
+        $(".process-"+device).css("visibility", "hidden");
+        $("#error_function").html("GET");
+        $("#error_message").html("Request failed: "+errorThrown);
+        $("#server_message").html(textStatus);
+        $("#user_message").html(user);
+        $("#apiurl_message").html(apiurl);
+        $( "#dialog-error" ).dialog({
+            modal: true,
+            width: 700,
+            buttons: {
+                Ok: function() {
+                    $( this ).dialog( "close" );
+                    startUpdate();
+                }
+            }
+        });
     });
 }
 
@@ -350,15 +432,38 @@ function get(type, sync=false, callback) {
     }).done(function( msg ) {
         //console.log(msg);
         callback(msg.data);
-    }).fail(function( jqXHR, textStatus ) {
-        alert( "Request failed for User: " + user );
+    }).fail(function( jqXHR, textStatus, errorThrown) {
+        clearInterval(interval);
+        $("#error_function").html("GET");
+        $("#error_message").html("Request failed: "+errorThrown);
+        $("#server_message").html(textStatus);
+        $("#user_message").html(user);
+        $("#apiurl_message").html(apiurl);
+        $( "#dialog-error" ).dialog({
+            modal: true,
+            width: 700,
+            buttons: {
+                Ok: function() {
+                    $( this ).dialog( "close" );
+                    startUpdate();
+                }
+            }
+        });
     });
 }
 
 function valueInObject(object, val) {
     var ret=false;
     $.each(object, function (key, value) {
-        if(value == val) ret=true;
+        if(value.lastIndexOf(val)>-1) {
+            if(value.lastIndexOf(":")>-1) {
+                var parts = value.split(":");
+                ret = parts[1];
+            }
+            else {
+                ret=true;
+            }
+        }
     });
     return ret;
 }
